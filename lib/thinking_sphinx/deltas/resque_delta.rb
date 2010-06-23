@@ -13,9 +13,16 @@ require 'thinking_sphinx'
 #
 class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
 
+  # LTRIM + LPOP deletes all items from the Resque queue without loading it
+  # into client memory (unlike Resque.dequeue).
   def self.cancel_thinking_sphinx_jobs
-    Resque.dequeue(ThinkingSphinx::Deltas::ResqueDelta::DeltaJob)
-    Resque.dequeue(ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob)
+    [
+      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
+    ].collect { |c| c.instance_variable_get(:@queue) }.uniq.each do |q|
+      Resque.redis.ltrim("queue:#{q}", 0, 0)
+      Resque.redis.lpop("queue:#{q}")
+    end
   end
 
   # Adds a job to the queue for processing the given model's delta index. A job

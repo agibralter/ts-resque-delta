@@ -31,12 +31,13 @@ Given "I have data and it has been indexed" do
   DelayedBeta.create(:name => "eight")
   DelayedBeta.create(:name => "nine")
   DelayedBeta.create(:name => "ten")
+  ThinkingSphinx::Deltas::ResqueDelta.cancel_thinking_sphinx_jobs
   ThinkingSphinx::Configuration.instance.controller.index
-  sleep(0.5)
+  sleep(1.5)
 end
 
 When "I wait for Sphinx to catch up" do
-  sleep(0.25)
+  sleep(0.5)
 end
 
 When /^I search for (\w+)$/ do |query|
