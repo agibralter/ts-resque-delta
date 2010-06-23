@@ -20,6 +20,21 @@ Given /^I am searching on (.+)$/ do |model|
   @model = model.gsub(/\s/, '_').singularize.camelize.constantize
 end
 
+Given "I have data and it has been indexed" do
+  DelayedBeta.create(:name => "one")
+  DelayedBeta.create(:name => "two")
+  DelayedBeta.create(:name => "three")
+  DelayedBeta.create(:name => "four")
+  DelayedBeta.create(:name => "five")
+  DelayedBeta.create(:name => "six")
+  DelayedBeta.create(:name => "seven")
+  DelayedBeta.create(:name => "eight")
+  DelayedBeta.create(:name => "nine")
+  DelayedBeta.create(:name => "ten")
+  ThinkingSphinx::Configuration.instance.controller.index
+  sleep(0.5)
+end
+
 When "I wait for Sphinx to catch up" do
   sleep(0.25)
 end

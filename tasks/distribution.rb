@@ -15,6 +15,7 @@ Jeweler::Tasks.new do |gem|
   gem.add_development_dependency("rspec", ">= 1.2.9")
   gem.add_development_dependency("yard", ">= 0")
   gem.add_development_dependency("cucumber", ">= 0")
+  gem.add_development_dependency("database_cleaner", ">= 0.5.2")
   gem.files = FileList[
     "lib/**/*.rb",
     "LICENSE",

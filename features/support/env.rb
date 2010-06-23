@@ -25,6 +25,11 @@ world.setup
 
 require 'redis_test_setup'
 RedisTestSetup.start_redis!(PROJECT_ROOT, :cucumber)
+Resque.redis = '127.0.0.1:6398'
 Before do
   Resque.redis.flushall
 end
+
+require 'database_cleaner'
+require 'database_cleaner/cucumber'
+DatabaseCleaner.strategy = :truncation
