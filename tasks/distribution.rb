@@ -10,7 +10,7 @@ Jeweler::Tasks.new do |gem|
   gem.email       = "aaron.gibralter@gmail.com"
   gem.homepage    = "http://github.com/agibralter/ts-resque-delta"
   gem.authors     = ["Aaron Gibralter"]
-  gem.add_dependency("thinking-sphinx", "~> 1.3.20")
+  gem.add_dependency("thinking-sphinx", "~> 1.4.0")
   gem.add_dependency("resque", "~> 1.10.0")
   gem.add_dependency("resque-lock-timeout", "~> 0.2.1")
   gem.add_development_dependency("rspec", ">= 1.2.9")
