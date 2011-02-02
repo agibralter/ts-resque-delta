@@ -12,7 +12,7 @@ You'll need Thinking Sphinx 1.3.0 or later, and Resque as well. The latter is fl
 
 In your `Gemfile` file, with the rest of your gem dependencies:
 
-    gem 'ts-resque-delta', '0.0.1', :require => 'thinking_sphinx/deltas/resque_delta'
+    gem 'ts-resque-delta', '0.0.4', :require => 'thinking_sphinx/deltas/resque_delta'
 
 And add the following line to the bottom of your `Rakefile`:
 
