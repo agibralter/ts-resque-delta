@@ -16,5 +16,5 @@ Cucumber::Rake::Task.new do |task|
   task.cucumber_opts = '--exclude features/thinking_sphinx'
 end
 
-task :spec      => :check_dependencies
-task :cucumber  => :check_dependencies
+task :spec
+task :cucumber
