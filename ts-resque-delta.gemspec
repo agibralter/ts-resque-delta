@@ -4,7 +4,7 @@ require "thinking_sphinx/deltas/resque_delta/version"
 
 Gem::Specification.new do |s|
   s.name        = "ts-resque-delta"
-  s.version     = ThinkingSphinx::Deltas::ResqueDelta::VERSION
+  s.version     = ThinkingSphinx::Deltas::ResqueDeltaInfo::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Aaron Gibralter"]
   s.email       = ["aaron.gibralter@gmail.com"]

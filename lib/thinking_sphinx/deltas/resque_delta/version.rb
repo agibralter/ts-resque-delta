@@ -1,6 +1,6 @@
 module ThinkingSphinx
   module Deltas
-    module ResqueDelta
+    class ResqueDeltaInfo
       VERSION = "0.0.5"
     end
   end
