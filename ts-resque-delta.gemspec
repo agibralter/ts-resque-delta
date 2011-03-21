@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.2.1"
 
-  s.add_development_dependency "rspec", "= 1.3.1"
+  s.add_development_dependency "rspec", "~> 1"
   s.add_development_dependency "cucumber", ">= 0"
   s.add_development_dependency "database_cleaner", ">= 0.5.2"
 end
