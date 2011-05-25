@@ -41,10 +41,12 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   #
   def index(model, instance = nil)
     return true if skip?(instance)
-    Resque.enqueue(
-      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-      model.delta_index_names
-    )
+    model.delta_index_names.each do |delta|
+      Resque.enqueue(
+        ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+        [delta]
+      )
+    end
     if instance
       Resque.enqueue(
         ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
