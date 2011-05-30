@@ -44,8 +44,10 @@ namespace :thinking_sphinx do
 			ret = $?
 				Resque.redis.del("ts-delta:index:#{name}_delta:locked")
 			exit(-1) if ret.to_i != 0
-			system "indexer --config #{CONFIG_FILE} --rotate #{name}_delta"
-			exit(-1) if $?.to_i != 0
+			Resque.enqueue(
+				ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+				["#{name}_delta"]
+			)
 		end
 	end
 end
