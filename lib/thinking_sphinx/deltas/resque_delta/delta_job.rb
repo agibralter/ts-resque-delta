@@ -14,6 +14,8 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   # @param [String] index the name of the Sphinx index
   #
   def self.perform(indexes)
+    return if skip?(indexes)
+
     config = ThinkingSphinx::Configuration.instance
     output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{indexes.join(' ')}`
     puts output unless ThinkingSphinx.suppress_delta_output?
@@ -50,5 +52,15 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     redis_job_value = Resque.encode(:class => self.to_s, :args => args)
     Resque.redis.lrem("queue:#{@queue}", 0, redis_job_value)
     yield
+  end
+
+  protected
+
+  def self.skip?(indexes)
+    if indexes.size == 1
+      Resque.redis.get("ts-delta:index:#{indexes.first}:locked") == "true"
+    else
+      false
+    end
   end
 end
