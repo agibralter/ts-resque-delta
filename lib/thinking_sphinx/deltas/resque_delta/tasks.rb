@@ -6,6 +6,7 @@ namespace :thinking_sphinx do
   def sphinx_indexes
     unless @sphinx_indexes
       @ts_config ||= ThinkingSphinx::Configuration.instance
+      @ts_config.generate
       @sphinx_indexes = @ts_config.configuration.indexes.collect { |i| i.name }
       # The collected indexes look like:
       # ["foo_core", "foo_delta", "foo", "bar_core", "bar_delta", "bar"]
@@ -71,5 +72,9 @@ end
 
 # Ensure that indexing does not conflict with ts-resque-delta delta jobs.
 Rake::Task['thinking_sphinx:index'].enhance ['thinking_sphinx:lock_deltas'] do
-  Rake::Task['thinking_sphinx:unlock_deltas']
+  Rake::Task['thinking_sphinx:unlock_deltas'].invoke
+end
+
+Rake::Task['thinking_sphinx:reindex'].enhance ['thinking_sphinx:lock_deltas'] do
+  Rake::Task['thinking_sphinx:unlock_deltas'].invoke
 end
