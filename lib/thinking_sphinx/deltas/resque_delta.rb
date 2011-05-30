@@ -41,10 +41,13 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   #
   def index(model, instance = nil)
     return true if skip?(instance)
-    Resque.enqueue(
-      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-      model.delta_index_names
-    )
+    model.delta_index_names.each do |delta|
+      next if index_locked?(delta)
+      Resque.enqueue(
+        ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+        [delta]
+      )
+    end
     if instance
       Resque.enqueue(
         ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
@@ -67,6 +70,10 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     !ThinkingSphinx.updates_enabled? ||
     !ThinkingSphinx.deltas_enabled?  ||
     (instance && !toggled(instance))
+  end
+
+  def index_locked?(name)
+    Resque.redis.get("ts-delta:index:#{name}:locked") == "true"
   end
 end
 
