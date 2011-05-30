@@ -18,8 +18,7 @@ namespace :thinking_sphinx do
 	desc "Deals with large indexes one at a time with delta locking"
 	task :smart_index do
 		require 'set'
-		require 'rubygems'
-		require 'resque'
+		require 'thinking_sphinx/deltas/resque_delta'
 
 		CONFIG_FILE = ENV['CONFIG_FILE']
 
