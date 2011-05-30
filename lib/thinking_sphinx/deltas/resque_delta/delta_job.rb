@@ -58,7 +58,7 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
 
   def self.skip?(indexes)
     if indexes.size == 1
-      Resque.redis.get("ts-delta:index:#{indexes.first}:locked") == "true"
+      ThinkingSphinx::Deltas::ResqueDelta.locked?(indexes.first)
     else
       false
     end

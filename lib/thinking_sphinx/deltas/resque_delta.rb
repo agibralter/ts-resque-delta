@@ -25,6 +25,18 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     end
   end
 
+  def self.lock(index_name)
+    Resque.redis.set("ts-delta:index:#{index_name}:locked", 'true')
+  end
+
+  def self.unlock(index_name)
+    Resque.redis.del("ts-delta:index:#{index_name}:locked")
+  end
+
+  def self.locked?(index_name)
+    Resque.redis.get("ts-delta:index:#{index_name}:locked") == 'true'
+  end
+
   # Adds a job to the queue for processing the given model's delta index. A job
   # for hiding the instance in the core index is also created, if an instance is
   # provided.
@@ -42,7 +54,7 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   def index(model, instance = nil)
     return true if skip?(instance)
     model.delta_index_names.each do |delta|
-      next if index_locked?(delta)
+      next if self.class.locked?(delta)
       Resque.enqueue(
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
         [delta]
@@ -70,10 +82,6 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     !ThinkingSphinx.updates_enabled? ||
     !ThinkingSphinx.deltas_enabled?  ||
     (instance && !toggled(instance))
-  end
-
-  def index_locked?(name)
-    Resque.redis.get("ts-delta:index:#{name}:locked") == "true"
   end
 end
 

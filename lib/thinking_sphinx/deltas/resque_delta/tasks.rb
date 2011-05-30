@@ -1,60 +1,75 @@
+require 'thinking_sphinx/deltas/resque_delta'
+
 namespace :thinking_sphinx do
-  task :index do
-    ThinkingSphinx::Deltas::ResqueDelta.cancel_thinking_sphinx_jobs
+
+  # Return a list of index prefixes (i.e. without "_core"/"_delta").
+  def sphinx_indexes
+    unless @sphinx_indexes
+      @ts_config ||= ThinkingSphinx::Configuration.instance
+      @sphinx_indexes = @ts_config.configuration.indexes.collect { |i| i.name }
+      # The collected indexes look like:
+      # ["foo_core", "foo_delta", "foo", "bar_core", "bar_delta", "bar"]
+      @sphinx_indexes.reject! { |i| i =~ /_(core|delta)$/}
+      # Now we have:
+      # ["foo", "bar"]
+    end
+    @sphinx_indexes
   end
 
-  desc "Process stored delta index requests"
-  task :resque_delta => :app_env do
-    raise "TODO... for now, please just run the workers on your own and make sure to work the :ts_delta queue."
-  #   require 'delayed/worker'
-  #   require 'thinking_sphinx/deltas/resque_delta'
-  #   
-  #   Delayed::Worker.new(
-  #     :min_priority => ENV['MIN_PRIORITY'],
-  #     :max_priority => ENV['MAX_PRIORITY']
-  #   ).start
+  def lock_delta(index_name)
+    ThinkingSphinx::Deltas::ResqueDelta.lock("#{index_name}_delta")
   end
 
-	desc "Deals with large indexes one at a time with delta locking"
-	task :smart_index do
-		require 'set'
-		require 'thinking_sphinx/deltas/resque_delta'
+  def unlock_delta(index_name)
+    ThinkingSphinx::Deltas::ResqueDelta.unlock("#{index_name}_delta")
+  end
 
-		CONFIG_FILE = ENV['CONFIG_FILE']
+  desc 'Lock all delta indexes (Resque will not run indexer or place new jobs on the :ts_delta queue).'
+  task :lock_deltas do
+    sphinx_indexes.each { |index_name| lock_delta(index_name) }
+  end
 
-		if CONFIG_FILE.nil? && ENV['RAILS_ROOT'].nil? && ENV['RAILS_ENV'].nil?
-			raise "Either CONFIG_FILE or RAILS_ROOT and RAILS_ENV must be set!"
-		end
+  desc 'Unlock all delta indexes.'
+  task :unlock_deltas do
+    sphinx_indexes.each { |index_name| unlock_delta(index_name) }
+  end
 
-		CONFIG_FILE ||= File.join(ENV['RAILS_ROOT'], 'config', "#{ENV['RAILS_ENV']}.sphinx.conf")
+  desc 'Like `rake thinking_sphinx:index`, but locks one index at a time.'
+  task :smart_index => :app_env do
+    # Load config like ts:in.
+    @ts_config = ThinkingSphinx::Configuration.instance
+    unless ENV['INDEX_ONLY'] == 'true'
+      puts "Generating Configuration to #{@ts_config.config_file}"
+      @ts_config.build
+    end
+    FileUtils.mkdir_p(@ts_config.searchd_file_path)
 
-		indexes_ary = `egrep "^index\ [a-zA-Z_]+_(core|delta)" #{CONFIG_FILE} | cut -c 7- | sed -e "s/ :.*//"`
-
-		indexes = SortedSet.new
-		indexes_ary.each do |index|
-			name, sep, type = index.rpartition('_')
-
-			indexes << name
-		end
-
-		indexes.each do |name|
-			Resque.redis.set("ts-delta:index:#{name}_delta:locked", 'true')
-			system "indexer --config #{CONFIG_FILE} --rotate #{name}_core"
-			ret = $?
-				Resque.redis.del("ts-delta:index:#{name}_delta:locked")
-			exit(-1) if ret.to_i != 0
-			Resque.enqueue(
-				ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-				["#{name}_delta"]
-			)
-		end
-	end
+    # Index each core, one at a time. Wrap with delta locking logic.
+    sphinx_indexes.each do |index_name|
+      lock_delta(index_name)
+      @ts_config.controller.index("#{index_name}_core", :verbose => true)
+      ret = $?
+      unlock_delta(index_name)
+      exit(-1) if ret.to_i != 0
+      Resque.enqueue(
+        ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+        ["#{index_name}_delta"]
+      )
+    end
+  end
 end
 
 namespace :ts do
-  desc "Process stored delta index requests"
-  task :rd => "thinking_sphinx:resque_delta"
 
-	desc "Deals with large indexes one at a time with delta locking"
-	task :si => "thinking_sphinx:smart_index"
+  desc 'Like `rake thinking_sphinx:index`, but locks one index at a time.'
+  task :si => 'thinking_sphinx:smart_index'
+end
+
+unless Rake::Task.task_defined?('thinking_sphinx:index')
+  require 'thinking_sphinx/tasks'
+end
+
+# Ensure that indexing does not conflict with ts-resque-delta delta jobs.
+Rake::Task['thinking_sphinx:index'].enhance ['thinking_sphinx:lock_deltas'] do
+  Rake::Task['thinking_sphinx:unlock_deltas']
 end
