@@ -6,21 +6,25 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
       ThinkingSphinx.updates_enabled = true
       ThinkingSphinx.deltas_enabled  = true
 
-      Resque.stub!(:enqueue => true)
+      Resque.stub(:enqueue => true)
 
       @delayed_delta = ThinkingSphinx::Deltas::ResqueDelta.new(
         stub('instance'), {}
       )
-      @delayed_delta.stub!(:toggled => true)
+      @delayed_delta.stub(:toggled).and_return(true)
+
+      ThinkingSphinx::Deltas::ResqueDelta.stub(:lock)
+      ThinkingSphinx::Deltas::ResqueDelta.stub(:unlock)
+      ThinkingSphinx::Deltas::ResqueDelta.stub(:locked?).and_return(false)
 
       @model = stub('foo')
-      @model.stub!(:name => 'foo')
-      @model.stub!(:source_of_sphinx_index => @model)
-      @model.stub!(:core_index_names  => ['foo_core'])
-      @model.stub!(:delta_index_names => ['foo_delta'])
+      @model.stub(:name => 'foo')
+      @model.stub(:source_of_sphinx_index => @model)
+      @model.stub(:core_index_names  => ['foo_core'])
+      @model.stub(:delta_index_names => ['foo_delta'])
 
       @instance = stub('instance')
-      @instance.stub!(:sphinx_document_id => 42)
+      @instance.stub(:sphinx_document_id => 42)
     end
 
     context 'updates disabled' do
@@ -57,7 +61,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
 
     context "instance isn't toggled" do
       before :each do
-        @delayed_delta.stub!(:toggled => false)
+        @delayed_delta.stub(:toggled => false)
       end
 
       it "should not enqueue a delta job" do
@@ -71,23 +75,44 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
       end
     end
 
-    it "should enqueue a delta job for the appropriate indexes" do
-      Resque.should_receive(:enqueue).with(ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, ['foo_delta']).once
+    it "should enqueue a delta job" do
+      Resque.should_receive(:enqueue).at_least(:once).with(
+        ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+        ['foo_delta']
+      )
       @delayed_delta.index(@model)
     end
 
-    it "should enqueue a flag-as-deleted job for the appropriate indexes" do
-      # WTF RSpec: http://gist.github.com/447611
-      # Resque.should_receive(:enqueue).with(ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob, ['foo_core'], an_instance_of(Numeric))
-      Resque.should_receive(:enqueue).twice
+    it "should enqueue a flag-as-deleted job" do
+      Resque.should_receive(:enqueue).at_least(:once).with(
+        ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
+        ['foo_core'],
+        42
+      )
       @delayed_delta.index(@model, @instance)
     end
 
-    it "should enqueue a flag-as-deleted job for the appropriate id" do
-      # WTF RSpec: http://gist.github.com/447611
-      # Resque.should_receive(:enqueue).with(ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob, an_instance_of(Array), 42)
-      Resque.should_receive(:enqueue).twice
-      @delayed_delta.index(@model, @instance)
+    context "delta index is locked" do
+      before :each do
+        ThinkingSphinx::Deltas::ResqueDelta.stub(:locked?).and_return(true)
+      end
+
+      it "should not enqueue a delta job" do
+        Resque.should_not_receive(:enqueue).with(
+          ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+          ['foo_delta']
+        )
+        @delayed_delta.index(@model, @instance)
+      end
+
+      it "should enqueue a flag-as-deleted job" do
+        Resque.should_receive(:enqueue).at_least(:once).with(
+          ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
+          ['foo_core'],
+          42
+        )
+        @delayed_delta.index(@model, @instance)
+      end
     end
   end
 end

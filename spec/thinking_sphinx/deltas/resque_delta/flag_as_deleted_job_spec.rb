@@ -5,19 +5,19 @@ describe ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob do
     before :each do
       ThinkingSphinx.updates_enabled = true
       @client = stub('client', :update => true)
-      ThinkingSphinx::Configuration.instance.stub!(:client => @client)
-      ThinkingSphinx.stub!(:search_for_id => true)
-      ThinkingSphinx.stub!(:sphinx_running? => true)
+      ThinkingSphinx::Configuration.instance.stub(:client => @client)
+      ThinkingSphinx.stub(:search_for_id => true)
+      ThinkingSphinx.stub(:sphinx_running? => true)
     end
 
     it "should not update if Sphinx isn't running" do
-      ThinkingSphinx.stub!(:sphinx_running? => false)
+      ThinkingSphinx.stub(:sphinx_running? => false)
       @client.should_not_receive(:update)
       ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob.perform(['foo_core'], 12)
     end
 
     it "should not update if the document isn't in the index" do
-      ThinkingSphinx.stub!(:search_for_id => false)
+      ThinkingSphinx.stub(:search_for_id => false)
       @client.should_not_receive(:update)
       ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob.perform(['foo_core'], 12)
     end

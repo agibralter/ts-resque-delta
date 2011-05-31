@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'cucumber'
 require 'spec/expectations'
 require 'fileutils'
@@ -11,8 +10,6 @@ $:.unshift(File.dirname(__FILE__))
 
 require 'cucumber/thinking_sphinx/internal_world'
 
-Time.zone_default = Time.__send__(:get_zone, 'Melbourne')
-ActiveRecord::Base.time_zone_aware_attributes = true
 ActiveRecord::Base.default_timezone = :utc
 
 world = Cucumber::ThinkingSphinx::InternalWorld.new
