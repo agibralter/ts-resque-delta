@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Aaron Gibralter"]
   s.email       = ["aaron.gibralter@gmail.com"]
-  s.homepage    = "http://github.com/agibralter/ts-resque-delta"
+  s.homepage    = "https://github.com/agibralter/ts-resque-delta"
   s.summary     = %q{Thinking Sphinx - Resque Deltas}
   s.description = %q{Manage delta indexes via Resque for Thinking Sphinx}
 
@@ -26,4 +26,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec", "~> 1"
   s.add_development_dependency "cucumber", ">= 0"
   s.add_development_dependency "database_cleaner", ">= 0.5.2"
+  s.add_development_dependency "mysql"
+  s.add_development_dependency "SystemTimer"
+  s.add_development_dependency "rake", "0.8.7"
+  s.add_development_dependency "ruby-debug"
+  s.add_development_dependency "activerecord", "~> 2.3.11"
 end

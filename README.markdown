@@ -1,57 +1,82 @@
 Delayed Deltas for Thinking Sphinx (with Resque)
 ================================================
-
-**This code is HEAVILY borrowed from [ts-delayed-delta](http://github.com/freelancing-god/ts-delayed-delta).**
+**This code is HEAVILY borrowed from
+[ts-delayed-delta](https://github.com/freelancing-god/ts-delayed-delta).**
 
 Installation
 ------------
-
-You'll need Thinking Sphinx 1.3.0 or later, and Resque as well. The latter is flagged as a dependency.
+This gem depends on the following gems: _thinking-sphinx_, _resque_, and
+_resque-lock-timeout_.
 
     gem install ts-resque-delta
 
-In your `Gemfile` file, with the rest of your gem dependencies:
+Add _ts-resque-delta_ to your **Gemfile** file, with the rest of your gem
+dependencies:
 
-    gem 'ts-resque-delta', 'x.x.x', :require => 'thinking_sphinx/deltas/resque_delta'
+    gem 'ts-resque-delta', '1.0.0',
+      :require => 'thinking_sphinx/deltas/resque_delta'
 
-And add the following line to the bottom of your `Rakefile`:
+And add the following line to your **Rakefile**:
 
     require 'thinking_sphinx/deltas/resque_delta/tasks'
 
-For the indexes you want to use this delta approach, make sure you set that up in their `define_index` blocks.
+Add the delta property to each `define_index` block:
 
     define_index do
       # ...
       set_property :delta => ThinkingSphinx::Deltas::ResqueDelta
     end
 
-If you've never used delta indexes before, you'll want to add the boolean column named delta to each model that is using the approach.
+If you've never used delta indexes before, you'll want to add the boolean
+column named `:delta` to each model's table (note, you must set the `:default`
+value to `true`):
 
     def self.up
-      add_column :articles, :delta, :boolean, :default => true, :null => false
+      add_column :foos, :delta, :boolean, :default => true, :null => false
+    end
+
+Also, I highly recommend adding a MySQL index to the table of any model using
+delta indexes. The Sphinx indexer uses `WHERE table.delta = 1` whenever the
+delta indexer runs and `... = 0` whenever the normal indexer runs. Having the
+MySQL index on the delta column will generally be a win:
+
+    def self.up
+      # ...
+      add_index :foos, :delta
     end
 
 Usage
 -----
+Once you've got it all set up, all you need to do is make sure that the Resque
+worker is running. You can do this by specifying the `:ts_delta` queue when
+running Resque:
 
-Once you've got it all set up, all you need to do is make sure that the Resque worker is running. You can do this either by running Resque's workers and specifying the `:ts_delta` queue, or Thinking Sphinx's custom rake task:
+    QUEUE=ts_delta,other_queues rake resque:work
 
-    rake thinking_sphinx:resque_delta
+Additionally, ts-resque-delta will wrap thinking-sphinx's
+`thinking_sphinx:index` and `thinking_sphinx:reindex` tasks with
+`thinking_sphinx:lock_deltas` and `thinking_sphinx:unlock_deltas`. This will
+prevent the delta indexer from running at the same time as the main indexer.
 
-There's also a short name for the same task, to save your fingers some effort:
+Finally, ts-resque-delta also provides a rake task called
+`thinking_sphinx:smart_index` (or `ts:si` for short). This task, instead of
+locking all the delta indexes at once while the main indexer runs, will lock
+each delta index independently and sequentially. Thay way, your delta indexer
+can run while the main indexer is processing large core indexes.
 
-    rake ts:rd
+Contributors (for ts-delayed-delta)
+-----------------------------------
+* [Aaron Gibralter](https://github.com/agibralter)
+* [Ryan Schlesinger](https://github.com/ryansch) (Locking/`smart_index`)
 
 Original Contributors (for ts-delayed-delta)
 --------------------------------------------
-
-* [Pat Allan](http://github.com/freelancing-god)
-* [Ryan Schlesinger](http://github.com/ryansch) (Allowing installs as a plugin)
-* [Maximilian Schulz](http://max.jungeelite.de) (Ensuring compatibility with Bundler)
-* [Edgars Beigarts](http://github.com/ebeigarts) (Adding intelligent description for tasks)
-* [Alexander Simonov](http://simonov.me/) (Explicit table definition)
+* [Pat Allan](https://github.com/freelancing-god)
+* [Ryan Schlesinger](https://github.com/ryansch) (Allowing installs as a plugin)
+* [Maximilian Schulz](https://max.jungeelite.de) (Ensuring compatibility with Bundler)
+* [Edgars Beigarts](https://github.com/ebeigarts) (Adding intelligent description for tasks)
+* [Alexander Simonov](https://simonov.me/) (Explicit table definition)
 
 Copyright
 ---------
-
-Copyright (c) 2010 Aaron Gibralter, and released under an MIT Licence.
+Copyright (c) 2011 Aaron Gibralter, and released under an MIT Licence.
