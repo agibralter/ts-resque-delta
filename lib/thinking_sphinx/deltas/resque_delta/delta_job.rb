@@ -57,10 +57,8 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   protected
 
   def self.skip?(indexes)
-    if indexes.size == 1
-      ThinkingSphinx::Deltas::ResqueDelta.locked?(indexes.first)
-    else
-      false
+    indexes.any? do |index|
+      ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
     end
   end
 end
