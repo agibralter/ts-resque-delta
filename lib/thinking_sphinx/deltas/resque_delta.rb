@@ -12,29 +12,36 @@ require 'thinking_sphinx'
 # @see http://ts.freelancing-gods.com Thinking Sphinx
 #
 class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
-
-  # LTRIM + LPOP deletes all items from the Resque queue without loading it
-  # into client memory (unlike Resque.dequeue).
-  def self.cancel_thinking_sphinx_jobs
+  def self.job_types
     [
       ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
       ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
-    ].collect { |c| c.instance_variable_get(:@queue) }.uniq.each do |q|
+    ]
+  end
+  
+  def self.job_prefix
+    'ts-delta'
+  end
+  
+  # LTRIM + LPOP deletes all items from the Resque queue without loading it
+  # into client memory (unlike Resque.dequeue).
+  def self.cancel_thinking_sphinx_jobs
+    job_types.collect { |c| c.instance_variable_get(:@queue) }.uniq.each do |q|
       Resque.redis.ltrim("queue:#{q}", 0, 0)
       Resque.redis.lpop("queue:#{q}")
     end
   end
 
   def self.lock(index_name)
-    Resque.redis.set("ts-delta:index:#{index_name}:locked", 'true')
+    Resque.redis.set("#{job_prefix}:index:#{index_name}:locked", 'true')
   end
 
   def self.unlock(index_name)
-    Resque.redis.del("ts-delta:index:#{index_name}:locked")
+    Resque.redis.del("#{job_prefix}:index:#{index_name}:locked")
   end
 
   def self.locked?(index_name)
-    Resque.redis.get("ts-delta:index:#{index_name}:locked") == 'true'
+    Resque.redis.get("#{job_prefix}:index:#{index_name}:locked") == 'true'
   end
 
   # Adds a job to the queue for processing the given model's delta index. A job
