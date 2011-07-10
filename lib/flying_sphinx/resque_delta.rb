@@ -1,3 +1,5 @@
+require 'thinking_sphinx/deltas/resque_delta'
+
 class FlyingSphinx::ResqueDelta < ThinkingSphinx::Deltas::ResqueDelta
   def self.job_types
     [
