@@ -31,4 +31,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake", "0.8.7"
   s.add_development_dependency "ruby-debug"
   s.add_development_dependency "activerecord", "~> 2.3.11"
+  s.add_development_dependency "flying-sphinx", ">= 0.5.1"
 end
