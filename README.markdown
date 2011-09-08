@@ -13,10 +13,10 @@ _resque-lock-timeout_.
 Add _ts-resque-delta_ to your **Gemfile** file, with the rest of your gem
 dependencies:
 
-    gem 'ts-resque-delta', '1.0.0',
-      :require => 'thinking_sphinx/deltas/resque_delta'
+    gem 'ts-resque-delta', '1.0.0'
 
-And add the following line to your **Rakefile**:
+If you're using Rails 3, the rake tasks will automatically be loaded by Rails.
+If you're using Rails 2, add the following line to your **Rakefile**:
 
     require 'thinking_sphinx/deltas/resque_delta/tasks'
 

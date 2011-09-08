@@ -23,13 +23,11 @@ Gem::Specification.new do |s|
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.3.1"
 
-  s.add_development_dependency "rspec", "~> 1"
+  s.add_development_dependency "rspec", "~> 1.0"
   s.add_development_dependency "cucumber", ">= 0"
   s.add_development_dependency "database_cleaner", ">= 0.5.2"
   s.add_development_dependency "mysql2", "~> 0.2.7"
-  s.add_development_dependency "SystemTimer"
   s.add_development_dependency "rake", "0.8.7"
-  s.add_development_dependency "ruby-debug"
   s.add_development_dependency "activerecord", "~> 2.3.11"
   s.add_development_dependency "flying-sphinx", ">= 0.5.1"
 end
