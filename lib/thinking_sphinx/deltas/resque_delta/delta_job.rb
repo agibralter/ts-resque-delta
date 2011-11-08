@@ -1,10 +1,12 @@
 require 'resque-lock-timeout'
+require 'resque-loner'
 
 # A simple job class that processes a given index.
 #
 class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
 
   extend Resque::Plugins::LockTimeout
+  include Resque::Plugins::UniqueJob
   @queue = :ts_delta
   @lock_timeout = 240
 

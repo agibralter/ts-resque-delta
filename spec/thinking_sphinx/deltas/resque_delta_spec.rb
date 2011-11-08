@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'mock_redis'
 
 describe ThinkingSphinx::Deltas::ResqueDelta do
   describe '#index' do
@@ -113,6 +114,30 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
         )
         @delayed_delta.index(@model, @instance)
       end
+    end
+  end
+
+  context 'without duplicates' do
+    before :all do
+      Resque.redis = MockRedis.new
+    end
+
+    before :each do
+      Resque.redis.flushall
+    end
+
+    it "should not enqueue a duplicate delta job" do
+      Resque.enqueue ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, ['foo_delta']
+      Resque.enqueue ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, ['foo_delta']
+
+      Resque.size(Resque.queue_from_class(ThinkingSphinx::Deltas::ResqueDelta::DeltaJob)).should == 1
+    end
+
+    it "should not enqueue a duplicate flag-as-deleted job" do
+      Resque.enqueue ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob, ['foo_delta'], 42
+      Resque.enqueue ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob, ['foo_delta'], 42
+
+      Resque.size(Resque.queue_from_class(ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob)).should == 1
     end
   end
 end

@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency "thinking-sphinx", ">= 1.4.1"
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.3.1"
+  s.add_dependency "ryansch-resque-loner", "~> 1.0.1.2"
 
   s.add_development_dependency "rspec", "~> 1.0"
   s.add_development_dependency "cucumber", ">= 0"
@@ -30,4 +31,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake", "0.8.7"
   s.add_development_dependency "activerecord", "~> 2.3.11"
   s.add_development_dependency "flying-sphinx", ">= 0.5.1"
+  s.add_development_dependency "mock_redis", "~> 0.2.0"
 end
