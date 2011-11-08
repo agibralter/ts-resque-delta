@@ -1,8 +1,10 @@
+require 'resque-loner'
 # A simple job for flagging a specified Sphinx document in a given index as
 # 'deleted'.
 #  
 class ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
 
+  include Resque::Plugins::UniqueJob
   @queue = :ts_delta
 
   # Takes an index name and document id. Please note that the document id is
