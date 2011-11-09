@@ -3,12 +3,12 @@ $:.push File.expand_path("../lib", __FILE__)
 require "thinking_sphinx/deltas/resque_delta/version"
 
 Gem::Specification.new do |s|
-  s.name        = "ts-resque-delta"
+  s.name        = "ryansch-ts-resque-delta"
   s.version     = ThinkingSphinx::Deltas::ResqueDeltaInfo::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Aaron Gibralter"]
-  s.email       = ["aaron.gibralter@gmail.com"]
-  s.homepage    = "https://github.com/agibralter/ts-resque-delta"
+  s.authors     = ["Aaron Gibralter", "Ryan Schlesinger"]
+  s.email       = ["ryan@instanceinc.com"]
+  s.homepage    = "https://github.com/ryansch/ts-resque-delta"
   s.summary     = %q{Thinking Sphinx - Resque Deltas}
   s.description = %q{Manage delta indexes via Resque for Thinking Sphinx}
 
