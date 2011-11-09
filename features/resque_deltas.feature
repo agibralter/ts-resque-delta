@@ -1,7 +1,7 @@
 Feature: Resque Delta Indexing
   In order to have delta indexing on frequently-updated sites
   Developers
-  Should be able to use Resque to handle delta indexes to lower system load
+  Should be able to use Resque to handle delta indices to lower system load
 
   Background:
     Given Sphinx is running

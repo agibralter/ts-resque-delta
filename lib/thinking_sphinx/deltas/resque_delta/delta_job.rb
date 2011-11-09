@@ -13,11 +13,11 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   #
   # @param [String] index the name of the Sphinx index
   #
-  def self.perform(indexes)
-    return if skip?(indexes)
+  def self.perform(indices)
+    return if skip?(indices)
 
     config = ThinkingSphinx::Configuration.instance
-    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{indexes.join(' ')}`
+    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{indices.join(' ')}`
     puts output unless ThinkingSphinx.suppress_delta_output?
   end
 
@@ -26,7 +26,7 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     Resque.enqueue(self, *args)
   end
 
-  # Run only one DeltaJob at a time regardless of indexes.
+  # Run only one DeltaJob at a time regardless of indices.
   def self.identifier(*args)
     nil
   end
@@ -56,8 +56,8 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
 
   protected
 
-  def self.skip?(indexes)
-    indexes.any? do |index|
+  def self.skip?(indices)
+    indices.any? do |index|
       ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
     end
   end

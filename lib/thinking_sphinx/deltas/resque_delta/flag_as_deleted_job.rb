@@ -14,14 +14,14 @@ class ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
   # situation to avoid old values in the core index and just use the new
   # values in the delta index as a reference point.
   #
-  # @param [Array] indexes An array of index names
+  # @param [Array] indices An array of index names
   # @param [Integer] document_id The document id
   #
   # @return [Boolean] true
   #
-  def self.perform(indexes, document_id)
+  def self.perform(indices, document_id)
     config = ThinkingSphinx::Configuration.instance
-    indexes.each do |index|
+    indices.each do |index|
       if ThinkingSphinx.sphinx_running? && ThinkingSphinx.search_for_id(document_id, index)
         config.client.update(index, ['sphinx_deleted'], {document_id => [1]})
       end

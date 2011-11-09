@@ -29,7 +29,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob do
       ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob.perform(['foo_core'], 12)
     end
 
-    it "should update all specified indexes" do
+    it "should update all specified indices" do
       @client.should_receive(:update).with('foo_core', anything, anything)
       @client.should_receive(:update).with('bar_core', anything, anything)
       ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob.perform(['foo_core', 'bar_core'], 12)

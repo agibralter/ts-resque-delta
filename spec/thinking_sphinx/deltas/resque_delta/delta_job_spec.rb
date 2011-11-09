@@ -24,7 +24,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
       )
     end
 
-    it "should process just the requested indexes" do
+    it "should process just the requested indices" do
       ThinkingSphinx::Deltas::ResqueDelta::DeltaJob.should_receive(:`) do |c|
         c.should match(/foo_delta/)
         c.should_not match(/--all/)
@@ -34,8 +34,8 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
       )
     end
 
-    context 'multiple indexes' do
-      it "should process all requested indexes" do
+    context 'multiple indices' do
+      it "should process all requested indices" do
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob.should_receive(:`) do |c|
           c.should match(/foo_delta bar_delta/)
         end
@@ -59,7 +59,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
         )
       end
 
-      it "should not start the indexer for multiple indexes" do
+      it "should not start the indexer for multiple indices" do
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob.should_not_receive(:`)
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob.perform(
           ['bar_delta', 'foo_delta']

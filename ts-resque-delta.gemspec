@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency "thinking-sphinx", ">= 1.4.1"
+  s.add_dependency "riddle", ">= 1.5"
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.3.1"
 
