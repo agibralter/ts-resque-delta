@@ -18,7 +18,7 @@ When /^I run one delayed job$/ do
 end
 
 When /^I cancel the jobs$/ do
-  ThinkingSphinx::Deltas::ResqueDelta.cancel_thinking_sphinx_jobs
+  ThinkingSphinx::Deltas::ResqueDelta.clear!
 end
 
 When /^I change the name of delayed beta (\w+) to (\w+)$/ do |current, replacement|
