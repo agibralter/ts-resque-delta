@@ -13,12 +13,32 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   #
   # @param [String] index the name of the Sphinx index
   #
-  def self.perform(indices)
-    return if skip?(indices)
+  def self.perform(index)
+    return if skip?(index)
 
     config = ThinkingSphinx::Configuration.instance
-    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{indices.join(' ')}`
+
+    # Delta Index
+    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{index}`
     puts output unless ThinkingSphinx.suppress_delta_output?
+
+    # Flag As Deleted
+    return unless ThinkingSphinx.sphinx_running?
+
+    index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(index)
+
+    # Get the document ids we've saved
+    flag_as_deleted_ids = ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.processing_members(index)
+
+    # Filter out the ids that aren't present in sphinx
+    flag_as_deleted_ids = ThinkingSphinx::Search.bundle_searches(flag_as_deleted_ids) do |sphinx, id|
+      sphinx.search_for_ids([], :index => index, :id_range => id..id)
+    end.map(&:to_a).flatten
+
+    # Each hash element should be of the form { id => [1] }
+    flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
+
+    config.client.update(index, ['sphinx_deleted'], flag_hash)
   end
 
   # Try again later if lock is in use.
@@ -26,10 +46,10 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     Resque.enqueue(self, *args)
   end
 
-  # Run only one DeltaJob at a time regardless of indices.
-  def self.identifier(*args)
-    nil
-  end
+  # Run only one DeltaJob at a time regardless of index.
+  #def self.identifier(*args)
+    #nil
+  #end
 
   # This allows us to have a concurrency safe version of ts-delayed-delta's
   # duplicates_exist:
@@ -51,14 +71,20 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     # instances of value from the list.
     redis_job_value = Resque.encode(:class => self.to_s, :args => args)
     Resque.redis.lrem("queue:#{@queue}", 0, redis_job_value)
+
+    # Grab the subset of flag as deleted document ids to work on
+    core_index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(*args)
+    ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.get_subset_for_processing(core_index)
+
     yield
+
+    # Clear processing set
+    ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.clear_processing(core_index)
   end
 
   protected
 
-  def self.skip?(indices)
-    indices.any? do |index|
-      ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
-    end
+  def self.skip?(index)
+    ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
   end
 end

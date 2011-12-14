@@ -1,6 +1,9 @@
 require 'resque'
 require 'thinking_sphinx'
 
+require 'thinking_sphinx/deltas/resque_delta/flag_as_deleted_set'
+require 'thinking_sphinx/deltas/resque_delta/index_utils'
+
 # Delayed Deltas for Thinking Sphinx, using Resque.
 #
 # This documentation is aimed at those reading the code. If you're looking for
@@ -14,8 +17,7 @@ require 'thinking_sphinx'
 class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   def self.job_types
     [
-      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
+      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     ]
   end
   
@@ -25,13 +27,24 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   
   # LTRIM + LPOP deletes all items from the Resque queue without loading it
   # into client memory (unlike Resque.dequeue).
-  def self.cancel_thinking_sphinx_jobs
+  # WARNING: This will clear ALL jobs in any queue used by a ResqueDelta job.
+  # If you're sharing a queue with other jobs they'll be deleted!
+  def self.clear_thinking_sphinx_queues
     job_types.collect { |c| c.instance_variable_get(:@queue) }.uniq.each do |q|
       Resque.redis.ltrim("queue:#{q}", 0, 0)
       Resque.redis.lpop("queue:#{q}")
     end
   end
 
+  # Clear both the resque queues and any other state maintained in redis
+  def self.clear!
+    self.clear_thinking_sphinx_queues
+
+    FlagAsDeletedSet.clear_all!
+  end
+
+  # Use simplistic locking.  We're assuming that the user won't run more than one
+  # `rake ts:si` or `rake ts:in` task at a time.
   def self.lock(index_name)
     Resque.redis.set("#{job_prefix}:index:#{index_name}:locked", 'true')
   end
@@ -42,6 +55,17 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
 
   def self.locked?(index_name)
     Resque.redis.get("#{job_prefix}:index:#{index_name}:locked") == 'true'
+  end
+
+  def self.prepare_for_core_index(index_name)
+    core = "#{index_name}_core"
+    delta = "#{index_name}_delta"
+
+    FlagAsDeletedSet.clear!(core)
+
+    #clear delta jobs
+    # dequeue is fast for jobs with arguments
+    Resque.dequeue(ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, delta)
   end
 
   # Adds a job to the queue for processing the given model's delta index. A job
@@ -64,15 +88,13 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
       next if self.class.locked?(delta)
       Resque.enqueue(
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-        [delta]
+        delta
       )
     end
     if instance
-      Resque.enqueue(
-        ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
-        model.core_index_names,
-        instance.sphinx_document_id
-      )
+      model.core_index_names.each do |core|
+        FlagAsDeletedSet.add(core, instance.sphinx_document_id)
+      end
     end
     true
   end
@@ -93,4 +115,4 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
 end
 
 require 'thinking_sphinx/deltas/resque_delta/delta_job'
-require 'thinking_sphinx/deltas/resque_delta/flag_as_deleted_job'
+require 'thinking_sphinx/deltas/resque_delta/core_index'
