@@ -12,6 +12,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
     before :each do
       ThinkingSphinx.suppress_delta_output = false
       ThinkingSphinx::Deltas::ResqueDelta.stub(:locked?).and_return(false)
+      ThinkingSphinx.stub(:sphinx_running? => false)
     end
 
     it "should output the delta indexing by default" do
@@ -54,7 +55,6 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
     context 'with flag as deleted document ids' do
       let(:client) { stub('client', :update => true) }
       let(:document_ids) { [1, 2, 3] }
-      let(:bundled_search) { double('bundled_search', :search_for_ids => []) }
 
       before :each do
         ThinkingSphinx.updates_enabled = true
@@ -63,7 +63,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
         ThinkingSphinx.stub(:sphinx_running? => true)
 
         ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.stub(:processing_members => document_ids)
-        ThinkingSphinx::Search.stub_chain(:bundle_searches, :map => document_ids)
+        subject.stub(:filter_flag_as_deleted_ids => document_ids)
       end
 
       it 'should get the processing set of flag as deleted document ids' do
@@ -78,22 +78,14 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
       end
 
       it "should validate the document ids with sphinx" do
-        ThinkingSphinx::Search.stub(:bundle_searches).tap do |s|
-          document_ids.inject(s) do |s, id|
-            s.and_yield(bundled_search, id)
-          end
-        end
-
-        document_ids.each do |id|
-          bundled_search.should_receive(:search_for_ids).with([], :index => 'foo_core', :id_range => id..id)
-        end
+        subject.should_receive(:filter_flag_as_deleted_ids).with(document_ids, 'foo_core')
 
         subject.perform('foo_delta')
       end
 
       context "with invalid ids" do
         before :each do
-          ThinkingSphinx::Search.stub_chain(:bundle_searches, :map => document_ids.reject {|x| x == 2} )
+          subject.stub(:filter_flag_as_deleted_ids => document_ids.reject {|x| x == 2} )
         end
 
         it "should not update documents that aren't in the index" do
@@ -130,6 +122,15 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
           document_ids.each {|id| values[id].should == [1] }
         end
         subject.perform('foo_delta')
+      end
+
+      context "without any ids" do
+        let(:document_ids) { [] }
+
+        it "should not validate the ids with sphinx" do
+          subject.should_not_receive(:filter_flag_as_deleted_ids)
+          subject.perform('foo_delta')
+        end
       end
     end
   end
