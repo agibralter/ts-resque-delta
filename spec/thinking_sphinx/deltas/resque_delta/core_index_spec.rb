@@ -111,6 +111,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::CoreIndex do
 
     it 'should not generate sphinx configuration if INDEX_ONLY is true' do
       ENV.stub(:[]).with('INDEX_ONLY').and_return('true')
+      ENV.stub(:[]).with('SILENT').and_return(nil)
       config.should_not_receive(:build)
 
       subject.smart_index
@@ -118,6 +119,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::CoreIndex do
 
     it 'should generate sphinx configuration if INDEX_ONLY is not true' do
       ENV.stub(:[]).with('INDEX_ONLY').and_return(nil)
+      ENV.stub(:[]).with('SILENT').and_return(nil)
       config.should_receive(:build).once
 
       subject.smart_index
