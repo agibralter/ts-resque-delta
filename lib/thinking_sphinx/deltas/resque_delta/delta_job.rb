@@ -30,15 +30,17 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     # Get the document ids we've saved
     flag_as_deleted_ids = ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.processing_members(index)
 
-    # Filter out the ids that aren't present in sphinx
-    flag_as_deleted_ids = ThinkingSphinx::Search.bundle_searches(flag_as_deleted_ids) do |sphinx, id|
-      sphinx.search_for_ids([], :index => index, :id_range => id..id)
-    end.map(&:to_a).flatten
+    unless flag_as_deleted_ids.empty?
+      # Filter out the ids that aren't present in sphinx
+      flag_as_deleted_ids = filter_flag_as_deleted_ids(flag_as_deleted_ids, index)
 
-    # Each hash element should be of the form { id => [1] }
-    flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
+      unless flag_as_deleted_ids.empty?
+        # Each hash element should be of the form { id => [1] }
+        flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
 
-    config.client.update(index, ['sphinx_deleted'], flag_hash)
+        config.client.update(index, ['sphinx_deleted'], flag_hash)
+      end
+    end
   end
 
   # Try again later if lock is in use.
@@ -86,5 +88,11 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
 
   def self.skip?(index)
     ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
+  end
+
+  def self.filter_flag_as_deleted_ids(ids, index)
+    ThinkingSphinx.search_for_ids(
+      :with => {:@id => ids}, :index => index
+    ).results[:matches].collect { |match| match[:doc] }
   end
 end

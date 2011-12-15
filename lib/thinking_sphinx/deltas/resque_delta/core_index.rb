@@ -42,10 +42,13 @@ class ThinkingSphinx::Deltas::ResqueDelta::CoreIndex
   # Public: Index all indices while locking each delta as we index the corresponding core index.
   #
   # Returns true on success; false on failure.
-  def smart_index
+  def smart_index(opts = {})
+    verbose = opts.fetch(:verbose, true)
+    verbose = false if ENV['SILENT'] == 'true'
+
     # Load config like ts:in.
     unless ENV['INDEX_ONLY'] == 'true'
-      puts "Generating Configuration to #{ts_config.config_file}"
+      puts "Generating Configuration to #{ts_config.config_file}" if verbose
       ts_config.build
     end
     FileUtils.mkdir_p(ts_config.searchd_file_path)
@@ -56,7 +59,7 @@ class ThinkingSphinx::Deltas::ResqueDelta::CoreIndex
 
       with_delta_index_lock(index_name) do
         ThinkingSphinx::Deltas::ResqueDelta.prepare_for_core_index(index_name)
-        ts_config.controller.index("#{index_name}_core", :verbose => true)
+        ts_config.controller.index("#{index_name}_core", :verbose => verbose)
         ret = $?
       end
 
