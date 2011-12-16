@@ -21,5 +21,8 @@ group :development do
 end
 
 group :test do
-  gem 'ruby-debug'
+  if RUBY_VERSION >= '1.9'
+  else
+    gem 'ruby-debug'
+  end
 end
