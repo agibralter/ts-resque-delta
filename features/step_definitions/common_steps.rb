@@ -44,6 +44,10 @@ Given "I have data and it has been indexed" do
   step "I have indexed"
 end
 
+When "I manually clear the delta queue" do
+  ThinkingSphinx::Deltas::ResqueDelta.clear!
+end
+
 When "I wait for Sphinx to catch up" do
   sleep(0.5)
 end

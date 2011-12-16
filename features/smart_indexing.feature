@@ -21,6 +21,7 @@ Feature: Smart Indexing
     And I wait for Sphinx to catch up
 
     When I change the name of delayed beta eleven to one
+    And I manually clear the delta queue
     And I run the smart indexer
     And I run the delayed jobs
     And I wait for Sphinx to catch up
