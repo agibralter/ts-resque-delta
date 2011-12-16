@@ -91,19 +91,19 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   end
 
   def self.filter_flag_as_deleted_ids(ids, index)
-    config = ThinkingSphinx::Configuration.instance
-    client = config.client
-    client.open
+    #config = ThinkingSphinx::Configuration.instance
+    #client = config.client
+    #client.open
 
     search_results = []
     partition_ids(ids, 4096) do |subset|
       search_results += ThinkingSphinx.search_for_ids(
-        :with => {:@id => subset}, :index => index, :client => client
+        :with => {:@id => subset}, :index => index#, :client => client
       ).results[:matches].collect { |match| match[:doc] }
-      client.reset
+      #client.reset
     end
 
-    client.close
+    #client.close
 
     search_results
   end
