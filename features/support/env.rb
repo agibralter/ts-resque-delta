@@ -3,7 +3,6 @@ require 'rspec/expectations'
 require 'fileutils'
 require 'active_record'
 require 'mock_redis'
-require 'ruby-debug'
 
 PROJECT_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
 
