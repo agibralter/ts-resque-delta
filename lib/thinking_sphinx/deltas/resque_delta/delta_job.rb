@@ -91,8 +91,43 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   end
 
   def self.filter_flag_as_deleted_ids(ids, index)
-    ThinkingSphinx.search_for_ids(
-      :with => {:@id => ids}, :index => index
-    ).results[:matches].collect { |match| match[:doc] }
+    config = ThinkingSphinx::Configuration.instance
+    client = config.client
+    client.open
+
+    search_results = []
+    partition_ids(ids, 4096) do |subset|
+      search_results += ThinkingSphinx.search_for_ids(
+        :with => {:@id => subset}, :index => index
+      ).results[:matches].collect { |match| match[:doc] }
+      client.reset
+    end
+
+    client.close
+
+    search_results
+  end
+
+  def self.partition_ids(ids, n)
+    if n > 0 && n < ids.size
+      result = []
+      max_subarray_size = n - 1
+      i = j = 0
+      while i < ids.size && j < ids.size
+        j = i + max_subarray_size
+        result << ids.slice(i..j)
+        i += n
+      end
+    else
+      result = ids
+    end
+
+    if block_given?
+      result.each do |ary|
+        yield ary
+      end
+    end
+
+    result
   end
 end
