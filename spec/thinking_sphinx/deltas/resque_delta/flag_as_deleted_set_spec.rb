@@ -89,7 +89,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet do
 
       subject.get_subset_for_processing('foo_core')
 
-      Resque.redis.smembers(subject.processing_name('foo_core')).should == %w[1 100 52 42]
+      Resque.redis.smembers(subject.processing_name('foo_core')).sort.should == %w[1 100 52 42].sort
     end
   end
 
