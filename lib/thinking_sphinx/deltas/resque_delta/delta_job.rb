@@ -98,7 +98,7 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     search_results = []
     partition_ids(ids, 4096) do |subset|
       search_results += ThinkingSphinx.search_for_ids(
-        :with => {:@id => subset}, :index => index
+        :with => {:@id => subset}, :index => index, :client => client
       ).results[:matches].collect { |match| match[:doc] }
       client.reset
     end
