@@ -10,6 +10,7 @@ Feature: Smart Indexing
 
   Scenario: Smart indexing should update core indices
     When I run the smart indexer
+    And I wait for Sphinx to catch up
     And I search for one
     Then I should get 1 result
 
@@ -38,5 +39,5 @@ Feature: Smart Indexing
   Scenario: Smart index should remove existing delta jobs
     When I run the smart indexer
     And I run one delayed job
+    And I wait for Sphinx to catch up
     Then there should be no more DeltaJobs on the Resque queue
-
