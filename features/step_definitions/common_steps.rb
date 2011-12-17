@@ -1,6 +1,6 @@
 Before do
   $queries_executed = []
-  ThinkingSphinx::Deltas::ResqueDelta.cancel_thinking_sphinx_jobs
+  ThinkingSphinx::Deltas::ResqueDelta.clear!
   @model      = nil
   @method     = :search
   @query      = ""
@@ -20,7 +20,7 @@ Given /^I am searching on (.+)$/ do |model|
   @model = model.gsub(/\s/, '_').singularize.camelize.constantize
 end
 
-Given "I have data and it has been indexed" do
+Given "I have data" do
   DelayedBeta.create(:name => "one")
   DelayedBeta.create(:name => "two")
   DelayedBeta.create(:name => "three")
@@ -31,9 +31,17 @@ Given "I have data and it has been indexed" do
   DelayedBeta.create(:name => "eight")
   DelayedBeta.create(:name => "nine")
   DelayedBeta.create(:name => "ten")
-  ThinkingSphinx::Deltas::ResqueDelta.cancel_thinking_sphinx_jobs
+end
+
+Given "I have indexed" do
+  ThinkingSphinx::Deltas::ResqueDelta.clear!
   ThinkingSphinx::Configuration.instance.controller.index
   sleep(1.5)
+end
+
+Given "I have data and it has been indexed" do
+  step "I have data"
+  step "I have indexed"
 end
 
 When "I wait for Sphinx to catch up" do
@@ -47,6 +55,11 @@ end
 
 Then /^I should get (\d+) results?$/ do |count|
   results.length.should == count.to_i
+end
+
+Then /^I debug$/ do
+  debugger
+  0
 end
 
 def results
