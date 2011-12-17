@@ -1,10 +1,16 @@
 #!/usr/bin/env rake
 require "bundler/gem_tasks"
 require 'rspec/core/rake_task'
+require 'cucumber'
+require 'cucumber/rake/task'
 
 RSpec::Core::RakeTask.new(:spec) do |t|
-  # Define options in .rspec so they run with guard as well
-#  t.rspec_opts = ["-c"]
+  t.rspec_opts = ["-c", "--format progress"]
 end
 
-task :default => :spec
+Cucumber::Rake::Task.new(:features) do |t|
+end
+
+task :all_tests => [:spec, :features]
+
+task :default => :all_tests
