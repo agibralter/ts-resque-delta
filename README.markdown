@@ -68,6 +68,7 @@ Contributors (for ts-delayed-delta)
 -----------------------------------
 * [Aaron Gibralter](https://github.com/agibralter)
 * [Ryan Schlesinger](https://github.com/ryansch) (Locking/`smart_index`)
+* [Pat Allan](https://github.com/freelancing-god) (FlyingSphinx support)
 
 Original Contributors (for ts-delayed-delta)
 --------------------------------------------
