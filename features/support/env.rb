@@ -1,7 +1,8 @@
 require 'cucumber'
-require 'spec/expectations'
+require 'rspec/expectations'
 require 'fileutils'
 require 'active_record'
+require 'mock_redis'
 
 PROJECT_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
 
@@ -20,9 +21,7 @@ require 'thinking_sphinx/deltas/resque_delta'
 
 world.setup
 
-require 'redis_test_setup'
-RedisTestSetup.start_redis!(PROJECT_ROOT, :cucumber)
-Resque.redis = '127.0.0.1:6398'
+Resque.redis = MockRedis.new
 Before do
   Resque.redis.flushall
 end
