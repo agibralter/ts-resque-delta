@@ -1,6 +1,6 @@
 class FlyingSphinx::ResqueDelta::DeltaJob < ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
   @queue = :fs_delta
-  
+
   # Runs Sphinx's indexer tool to process the index. Currently assumes Sphinx
   # is running.
   #
@@ -9,6 +9,6 @@ class FlyingSphinx::ResqueDelta::DeltaJob < ThinkingSphinx::Deltas::ResqueDelta:
   def self.perform(indices)
     return if skip?(indices)
 
-    FlyingSphinx::IndexRequest.new(indices).perform
+    FlyingSphinx::IndexRequest.new([indices]).perform
   end
 end
