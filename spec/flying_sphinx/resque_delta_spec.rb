@@ -9,13 +9,13 @@ describe FlyingSphinx::ResqueDelta do
       ]
     end
   end
-  
+
   describe '.job_prefix' do
     it "is fs-delta" do
       FlyingSphinx::ResqueDelta.job_prefix.should == 'fs-delta'
     end
   end
-  
+
   describe '#index' do
     before :each do
       ThinkingSphinx.updates_enabled = true
@@ -90,8 +90,7 @@ describe FlyingSphinx::ResqueDelta do
 
     it "should enqueue a delta job" do
       Resque.should_receive(:enqueue).at_least(:once).with(
-        FlyingSphinx::ResqueDelta::DeltaJob,
-        ['foo_delta']
+        FlyingSphinx::ResqueDelta::DeltaJob, 'foo_delta'
       )
       @delayed_delta.index(@model)
     end
