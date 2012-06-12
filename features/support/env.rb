@@ -19,7 +19,17 @@ world.configure_database
 require 'thinking_sphinx'
 require 'thinking_sphinx/deltas/resque_delta'
 
+ActiveRecord::Base.send(:include, ThinkingSphinx::ActiveRecord)
+
+ActiveSupport::Inflector.inflections do |inflect|
+  inflect.plural /^(.*)beta$/i, '\1betas'
+  inflect.singular /^(.*)betas$/i, '\1beta'
+end
+
 world.setup
+
+ThinkingSphinx.updates_enabled = true
+ThinkingSphinx.deltas_enabled = true
 
 Resque.redis = MockRedis.new
 Before do

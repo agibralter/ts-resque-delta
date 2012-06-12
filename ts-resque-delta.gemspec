@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.3.1"
 
-  s.add_development_dependency "rspec", "~> 2.7.0"
+  s.add_development_dependency "rspec", "~> 2.10.0"
   s.add_development_dependency "cucumber", ">= 0"
   s.add_development_dependency "database_cleaner", ">= 0.5.2"
   s.add_development_dependency "mysql2", "~> 0.2.7"
@@ -37,4 +37,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-bundler", "~> 0.1.3"
   s.add_development_dependency "guard-cucumber", "~> 0.7.4"
   s.add_development_dependency "fakefs", "~> 0.4.0"
+  s.add_development_dependency "appraisal", "~> 0.4.1"
 end

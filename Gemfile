@@ -20,9 +20,11 @@ group :development do
   end
 end
 
-group :test do
-  if RUBY_VERSION >= '1.9'
-  else
-    gem 'ruby-debug'
-  end
-end
+# Provided as an example for developers to use
+# group :test do
+#   if RUBY_VERSION >= '1.9'
+#     gem 'debugger'
+#   else
+#     gem 'ruby-debug'
+#   end
+# end

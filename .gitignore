@@ -1,6 +1,5 @@
 *.gem
 .bundle
-Gemfile.lock
 pkg/*
 *~
 .DS_Store
@@ -14,3 +13,6 @@ coverage
 rdoc
 features/thinking_sphinx/database.yml
 tmp
+/bin
+.rvmrc
+.rbenv-version
