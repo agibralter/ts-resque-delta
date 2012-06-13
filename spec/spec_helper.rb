@@ -11,3 +11,5 @@ RSpec.configure do |c|
   c.run_all_when_everything_filtered = true
   c.treat_symbols_as_metadata_keys_with_true_values = true
 end
+
+SPEC_BIN_PATH = File.expand_path(File.join(File.dirname(__FILE__), 'bin'))

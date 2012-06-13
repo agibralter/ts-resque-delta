@@ -95,7 +95,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::CoreIndex do
       config.stub(:searchd_file_path => test_path)
       config.stub_chain(:controller, :index) do
         # Set $? to 0
-        `/usr/bin/true`
+        `#{File.join(SPEC_BIN_PATH, 'true.rb')}`
       end
 
       # Silence Generating config message
@@ -188,7 +188,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::CoreIndex do
       before :each do
         config.stub_chain(:controller, :index) do
           # Set $? to 1
-          `/usr/bin/false`
+          `#{File.join(SPEC_BIN_PATH, 'false.rb')}`
         end
       end
 
