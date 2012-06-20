@@ -66,7 +66,7 @@ locking all the delta indexes at once while the main indexer runs, will lock
 each delta index independently and sequentially. Thay way, your delta indexer
 can run while the main indexer is processing large core indexes.
 
-Contributors (for ts-delayed-delta)
+Contributors (for ts-resque-delta)
 -----------------------------------
 * [Aaron Gibralter](https://github.com/agibralter)
 * [Ryan Schlesinger](https://github.com/ryansch) (Locking/`smart_index`)
