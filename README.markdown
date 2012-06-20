@@ -1,5 +1,7 @@
 Delayed Deltas for Thinking Sphinx (with Resque)
 ================================================
+[![Build Status](https://secure.travis-ci.org/agibralter/ts-resque-delta.png?branch=master)](http://travis-ci.org/agibralter/ts-resque-delta)
+
 **This code is HEAVILY borrowed from
 [ts-delayed-delta](https://github.com/freelancing-god/ts-delayed-delta).**
 
