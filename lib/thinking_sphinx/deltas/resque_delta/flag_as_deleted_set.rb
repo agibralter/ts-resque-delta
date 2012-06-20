@@ -35,14 +35,17 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     end
 
     def get_subset_for_processing(core_name)
-      # Copy set to temp
-      Resque.redis.sunionstore temp_name(core_name), set_name(core_name)
-      # Store (set - temp) into set.  This removes all items we copied into temp from set.
-      Resque.redis.sdiffstore set_name(core_name), set_name(core_name), temp_name(core_name)
-      # Merge processing and temp together and store into processing.
-      Resque.redis.sunionstore processing_name(core_name), processing_name(core_name), temp_name(core_name)
+      # Use a transaction to keep from losing set members if interrupted
+      Resque.redis.multi do
+        # Copy set to temp
+        Resque.redis.sunionstore temp_name(core_name), set_name(core_name)
+        # Store (set - temp) into set.  This removes all items we copied into temp from set.
+        Resque.redis.sdiffstore set_name(core_name), set_name(core_name), temp_name(core_name)
+        # Merge processing and temp together and store into processing.
+        Resque.redis.sunionstore processing_name(core_name), processing_name(core_name), temp_name(core_name)
 
-      Resque.redis.del temp_name(core_name)
+        Resque.redis.del temp_name(core_name)
+      end
     end
 
     def processing_members(core_name)
