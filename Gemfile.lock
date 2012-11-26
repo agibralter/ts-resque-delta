@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ts-resque-delta (1.2.2)
+    ts-resque-delta (1.2.3)
       resque (~> 1.10)
       resque-lock-timeout (~> 0.4)
       riddle (>= 1.5)

@@ -1,3 +1,4 @@
-username: root
-host: localhost
+username: "root"
+host:     "localhost"
 password: 
+adapter:  "mysql2"
