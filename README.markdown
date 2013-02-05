@@ -71,6 +71,7 @@ Contributors (for ts-resque-delta)
 * [Aaron Gibralter](https://github.com/agibralter)
 * [Ryan Schlesinger](https://github.com/ryansch) (Locking/`smart_index`)
 * [Pat Allan](https://github.com/freelancing-god) (FlyingSphinx support)
+* [James Richard](https://github.com/ketzusaka)
 
 Original Contributors (for ts-delayed-delta)
 --------------------------------------------
