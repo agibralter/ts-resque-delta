@@ -16,3 +16,4 @@ tmp
 /bin
 .rvmrc
 .rbenv-version
+Gemfile.lock
