@@ -32,7 +32,3 @@ end
 Rake::Task['ts:index'].enhance ['ts:lock_deltas'] do
   Rake::Task['ts:unlock_deltas'].invoke
 end
-
-Rake::Task['ts:reindex'].enhance ['ts:lock_deltas'] do
-  Rake::Task['ts:unlock_deltas'].invoke
-end
