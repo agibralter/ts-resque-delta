@@ -3,7 +3,7 @@ class ThinkingSphinx::Deltas::ResqueDelta::CoreIndex
   def sphinx_indices
     unless @sphinx_indices
       @ts_config ||= ThinkingSphinx::Configuration.instance
-      @ts_config.generate
+      @ts_config.preload_indices
       @sphinx_indices = @ts_config.configuration.indices.collect { |i| i.name }
       # The collected indices look like:
       # ["foo_core", "foo_delta", "foo", "bar_core", "bar_delta", "bar"]
