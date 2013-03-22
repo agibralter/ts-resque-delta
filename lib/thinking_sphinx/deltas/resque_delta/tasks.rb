@@ -1,4 +1,4 @@
-require 'ts/deltas/resque_delta'
+require 'thinking_sphinx/deltas/resque_delta'
 
 namespace :ts do
   desc 'Lock all delta indices (Resque will not run indexer or place new jobs on the :ts_delta queue).'
@@ -25,7 +25,7 @@ namespace :ts do
 end
 
 unless Rake::Task.task_defined?('ts:index')
-  require 'ts/tasks'
+  require 'thinking_sphinx/tasks'
 end
 
 # Ensure that indexing does not conflict with ts-resque-delta delta jobs.
