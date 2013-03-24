@@ -34,9 +34,7 @@ module ThinkingSphinx::Deltas::ResqueDelta::IndexUtils
   end
 
   def ts_config
-    @ts_config ||= ThinkingSphinx::Configuration.instance.tap do |config|
-      config.generate
-    end
+    @ts_config ||= ThinkingSphinx::Configuration.instance
   end
 
   private
