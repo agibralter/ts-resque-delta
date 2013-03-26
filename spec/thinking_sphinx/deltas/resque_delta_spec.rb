@@ -2,17 +2,10 @@ require 'spec_helper'
 
 describe ThinkingSphinx::Deltas::ResqueDelta do
   before :each do
-    ThinkingSphinx.updates_enabled = true
-    ThinkingSphinx.deltas_enabled  = true
-
     Resque.redis = MockRedis.new
   end
 
   describe '#index' do
-    def flag_as_deleted_document_in_set?
-      Resque.redis.sismember(ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.set_name('foo_core'), 42)
-    end
-
     subject do
       ThinkingSphinx::Deltas::ResqueDelta.new(
         stub('instance'), {}
@@ -43,65 +36,12 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
       Resque.stub(:enqueue => true)
     end
 
-    context 'updates disabled' do
-      before :each do
-        ThinkingSphinx.updates_enabled = false
-      end
-
-      it "should not enqueue a delta job" do
-        Resque.should_not_receive(:enqueue)
-        subject.index(model)
-      end
-
-      it "should not add a flag as deleted document to the set" do
-        subject.index(model, instance)
-        flag_as_deleted_document_in_set?.should be_false
-      end
-    end
-
-    context 'deltas disabled' do
-      before :each do
-        ThinkingSphinx.deltas_enabled = false
-      end
-
-      it "should not enqueue a delta job" do
-        Resque.should_not_receive(:enqueue)
-        subject.index(model)
-      end
-
-      it "should not add a flag as deleted document to the set" do
-        subject.index(model, instance)
-        flag_as_deleted_document_in_set?.should be_false
-      end
-    end
-
-    context "instance isn't toggled" do
-      before :each do
-        subject.stub(:toggled => false)
-      end
-
-      it "should not enqueue a delta job" do
-        Resque.should_not_receive(:enqueue)
-        subject.index(model, instance)
-      end
-
-      it "should not add a flag as deleted document to the set" do
-        subject.index(model, instance)
-        flag_as_deleted_document_in_set?.should be_false
-      end
-    end
-
     it "should enqueue a delta job" do
       Resque.should_receive(:enqueue).once.with(
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
         'foo_delta'
       )
       subject.index(model)
-    end
-
-    it "should add the flag as deleted document id to the set" do
-      subject.index(model, instance)
-      flag_as_deleted_document_in_set?.should be_true
     end
 
     context "delta index is locked" do
@@ -112,11 +52,6 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
       it "should not enqueue a delta job" do
         Resque.should_not_receive(:enqueue)
         subject.index(model, instance)
-      end
-
-      it "should add the flag as deleted document id to the set" do
-        subject.index(model, instance)
-        flag_as_deleted_document_in_set?.should be_true
       end
     end
   end
@@ -175,12 +110,6 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
 
     before :each do
       Resque.stub(:dequeue)
-      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.stub(:clear!)
-    end
-
-    it "should call FlagAsDeletedSet.clear!" do
-      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.should_receive(:clear!).with('foo_core')
-      subject
     end
 
     it "should clear delta jobs" do

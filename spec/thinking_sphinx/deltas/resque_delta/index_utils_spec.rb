@@ -50,18 +50,4 @@ describe ThinkingSphinx::Deltas::ResqueDelta::IndexUtils do
       subject.delta_indices.should =~ %w[foo_delta bar_delta]
     end
   end
-
-  describe '.ts_config' do
-    it 'should use a cached value if one exists' do
-      subject.instance_variable_set(:@ts_config, config)
-
-      subject.ts_config.should be(config)
-    end
-
-    it 'should generate the config when fetching the Configuration instance' do
-      config.should_receive(:generate)
-
-      subject.ts_config
-    end
-  end
 end
