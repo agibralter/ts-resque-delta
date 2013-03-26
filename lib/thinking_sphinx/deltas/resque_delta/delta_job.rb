@@ -19,28 +19,29 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     config = ThinkingSphinx::Configuration.instance
 
     # Delta Index
-    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file} --rotate #{index}`
-    puts output unless ThinkingSphinx.suppress_delta_output?
+    config.controller.index index, :verbose => !config.settings['quiet_deltas']
+    
+    #@atlantis: far as I can tell, ThinkingSphinx handles this automatically https://groups.google.com/forum/?fromgroups=#!topic/thinking-sphinx/_fGTfqJXog0
 
     # Flag As Deleted
-    return unless ThinkingSphinx.sphinx_running?
+    #return unless ThinkingSphinx.sphinx_running?
 
-    index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(index)
+    #index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(index)
 
     # Get the document ids we've saved
-    flag_as_deleted_ids = ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.processing_members(index)
+    # flag_as_deleted_ids = ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.processing_members(index)
 
-    unless flag_as_deleted_ids.empty?
-      # Filter out the ids that aren't present in sphinx
-      flag_as_deleted_ids = filter_flag_as_deleted_ids(flag_as_deleted_ids, index)
+    # unless flag_as_deleted_ids.empty?
+    #   # Filter out the ids that aren't present in sphinx
+    #   flag_as_deleted_ids = filter_flag_as_deleted_ids(flag_as_deleted_ids, index)
 
-      unless flag_as_deleted_ids.empty?
-        # Each hash element should be of the form { id => [1] }
-        flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
+    #   unless flag_as_deleted_ids.empty?
+    #     # Each hash element should be of the form { id => [1] }
+    #     flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
 
-        config.client.update(index, ['sphinx_deleted'], flag_hash)
-      end
-    end
+    #     config.client.update(index, ['sphinx_deleted'], flag_hash)
+    #   end
+    # end
   end
 
   # Try again later if lock is in use.
@@ -75,13 +76,13 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     Resque.redis.lrem("queue:#{@queue}", 0, redis_job_value)
 
     # Grab the subset of flag as deleted document ids to work on
-    core_index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(*args)
-    ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.get_subset_for_processing(core_index)
+    # core_index = ThinkingSphinx::Deltas::ResqueDelta::IndexUtils.delta_to_core(*args)
+    #ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.get_subset_for_processing(core_index)
 
     yield
 
     # Clear processing set
-    ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.clear_processing(core_index)
+    #ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.clear_processing(core_index)
   end
 
   protected
@@ -90,37 +91,37 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
     ThinkingSphinx::Deltas::ResqueDelta.locked?(index)
   end
 
-  def self.filter_flag_as_deleted_ids(ids, index)
-    search_results = []
-    partition_ids(ids, 4096) do |subset|
-      search_results += ThinkingSphinx.search_for_ids(
-        :with => {:@id => subset}, :index => index
-      ).results[:matches].collect { |match| match[:doc] }
-    end
+  # def self.filter_flag_as_deleted_ids(ids, index)
+  #   search_results = []
+  #   partition_ids(ids, 4096) do |subset|
+  #     search_results += ThinkingSphinx.search_for_ids(
+  #       :with => {:@id => subset}, :index => index
+  #     ).results[:matches].collect { |match| match[:doc] }
+  #   end
 
-    search_results
-  end
+  #   search_results
+  # end
 
-  def self.partition_ids(ids, n)
-    if n > 0 && n < ids.size
-      result = []
-      max_subarray_size = n - 1
-      i = j = 0
-      while i < ids.size && j < ids.size
-        j = i + max_subarray_size
-        result << ids.slice(i..j)
-        i += n
-      end
-    else
-      result = ids
-    end
+  # def self.partition_ids(ids, n)
+  #   if n > 0 && n < ids.size
+  #     result = []
+  #     max_subarray_size = n - 1
+  #     i = j = 0
+  #     while i < ids.size && j < ids.size
+  #       j = i + max_subarray_size
+  #       result << ids.slice(i..j)
+  #       i += n
+  #     end
+  #   else
+  #     result = ids
+  #   end
 
-    if block_given?
-      result.each do |ary|
-        yield ary
-      end
-    end
+  #   if block_given?
+  #     result.each do |ary|
+  #       yield ary
+  #     end
+  #   end
 
-    result
-  end
+  #   result
+  # end
 end

@@ -40,7 +40,7 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   def self.clear!
     self.clear_thinking_sphinx_queues
 
-    FlagAsDeletedSet.clear_all!
+    #FlagAsDeletedSet.clear_all!
   end
 
   # Use simplistic locking.  We're assuming that the user won't run more than one
@@ -61,7 +61,7 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     core = "#{index_name}_core"
     delta = "#{index_name}_delta"
 
-    FlagAsDeletedSet.clear!(core)
+    #FlagAsDeletedSet.clear!(core)
 
     #clear delta jobs
     # dequeue is fast for jobs with arguments
@@ -82,22 +82,29 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
   #   has changed. Optional.
   # @return [Boolean] true
   #
-  def index(model, instance = nil)
-    return true if skip?(instance)
-    model.delta_index_names.each do |delta|
-      next if self.class.locked?(delta)
-      Resque.enqueue(
+  def index(index)
+    return true if self.class.locked?(index.name)
+    Resque.enqueue(
         ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-        delta
+        index.name
       )
-    end
-    if instance
-      model.core_index_names.each do |core|
-        FlagAsDeletedSet.add(core, instance.sphinx_document_id)
-      end
-    end
+
+    # return true if skip?(instance)
+    # model.delta_index_names.each do |delta|
+    #   next if self.class.locked?(delta)
+    #   Resque.enqueue(
+    #     ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+    #     delta
+    #   )
+    # end
+    # if instance
+    #   model.core_index_names.each do |core|
+    #     FlagAsDeletedSet.add(core, instance.sphinx_document_id)
+    #   end
+    # end
     true
   end
+
 
   private
 
