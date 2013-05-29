@@ -54,13 +54,18 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
 
     context 'with flag as deleted document ids' do
       let(:client) { stub('client', :update => true) }
+      let(:ts_executable) { true }
       let(:document_ids) { [1, 2, 3] }
 
       before :each do
         ThinkingSphinx.updates_enabled = true
 
-        ThinkingSphinx::Configuration.instance.stub(:client => client)
         ThinkingSphinx.stub(:sphinx_running? => true)
+        if ts_executable
+          ThinkingSphinx::Connection.should_receive(:take).and_yield(client)
+        else
+          ThinkingSphinx::Connection.should_not_receive(:take)
+        end
 
         ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.stub(:processing_members => document_ids)
         subject.stub(:filter_flag_as_deleted_ids => document_ids)
@@ -72,8 +77,11 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
       end
 
       it "should not update if Sphinx isn't running" do
+        # hook the before filter
+        subject.perform('foo_delta')
+
         ThinkingSphinx.stub(:sphinx_running? => false)
-        client.should_not_receive(:update)
+        ThinkingSphinx::Connection.should_not_receive(:take)
         subject.perform('foo_delta')
       end
 
@@ -125,6 +133,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta::DeltaJob do
       end
 
       context "without any ids" do
+        let(:ts_executable) { false }
         let(:document_ids) { [] }
 
         it "should not validate the ids with sphinx" do

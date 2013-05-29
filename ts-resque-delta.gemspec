@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency "thinking-sphinx", ">= 1.4.1"
+  s.add_dependency "thinking-sphinx", "~> 2.1.0"
   s.add_dependency "riddle", ">= 1.5"
   s.add_dependency "resque", "~> 1.10"
   s.add_dependency "resque-lock-timeout", "~> 0.4"
@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "mysql2", "~> 0.3.11"
   s.add_development_dependency "rake", ">= 0.8.7"
   s.add_development_dependency "activerecord", "~> 3.2.0"
-  s.add_development_dependency "flying-sphinx", ">= 0.5.1"
+  s.add_development_dependency "flying-sphinx", "0.8.5"
   s.add_development_dependency "mock_redis", "~> 0.3.0"
   s.add_development_dependency "guard", "~> 0.8.8"
   s.add_development_dependency "guard-rspec", "~> 0.5.8"

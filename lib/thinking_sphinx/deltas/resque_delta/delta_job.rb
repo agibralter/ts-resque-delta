@@ -38,7 +38,9 @@ class ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
         # Each hash element should be of the form { id => [1] }
         flag_hash = Hash[*flag_as_deleted_ids.collect {|id| [id, [1]] }.flatten(1)]
 
-        config.client.update(index, ['sphinx_deleted'], flag_hash)
+        ThinkingSphinx::Connection.take do |client|
+          client.update(index, ['sphinx_deleted'], flag_hash)
+        end
       end
     end
   end
