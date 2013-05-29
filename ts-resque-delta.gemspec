@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "mysql2", "~> 0.3.11"
   s.add_development_dependency "rake", ">= 0.8.7"
   s.add_development_dependency "activerecord", "~> 3.2.0"
-  s.add_development_dependency "flying-sphinx", ">= 0.5.1"
+  s.add_development_dependency "flying-sphinx", "0.8.5"
   s.add_development_dependency "mock_redis", "~> 0.3.0"
   s.add_development_dependency "guard", "~> 0.8.8"
   s.add_development_dependency "guard-rspec", "~> 0.5.8"
