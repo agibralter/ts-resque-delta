@@ -1,7 +1,5 @@
 require 'thinking_sphinx'
 require 'thinking_sphinx/deltas/resque_delta'
-require 'flying_sphinx'
-require 'flying_sphinx/resque_delta'
 
 require 'mock_redis'
 require 'fakefs/spec_helpers'
