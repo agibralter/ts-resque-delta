@@ -1,10 +1,7 @@
 # -*- encoding: utf-8 -*-
-$:.push File.expand_path("../lib", __FILE__)
-require "thinking_sphinx/deltas/resque_delta/version"
-
 Gem::Specification.new do |s|
   s.name        = "ts-resque-delta"
-  s.version     = ThinkingSphinx::Deltas::ResqueDeltaInfo::VERSION
+  s.version     = '1.2.4'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Aaron Gibralter"]
   s.email       = ["aaron.gibralter@gmail.com"]
