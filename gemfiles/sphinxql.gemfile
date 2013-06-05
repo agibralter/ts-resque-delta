@@ -2,7 +2,6 @@
 
 source "http://rubygems.org"
 
-gem "activerecord", "~> 3.2.9"
-gem "mysql2", "~> 0.3.11"
+gem "thinking-sphinx", "~> 3.0.3"
 
 gemspec :path=>"../"
