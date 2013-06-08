@@ -33,13 +33,6 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     end
   end
 
-  # Clear both the resque queues and any other state maintained in redis
-  def self.clear!
-    self.clear_thinking_sphinx_queues
-
-    FlagAsDeletedSet.clear_all!
-  end
-
   # Use simplistic locking.  We're assuming that the user won't run more than
   # one `rake ts:si` or `rake ts:in` task at a time.
   def self.lock(index_name)
@@ -52,17 +45,6 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
 
   def self.locked?(index_name)
     Resque.redis.get("#{JOB_PREFIX}:index:#{index_name}:locked") == 'true'
-  end
-
-  def self.prepare_for_core_index(index_name)
-    core = "#{index_name}_core"
-    delta = "#{index_name}_delta"
-
-    FlagAsDeletedSet.clear!(core)
-
-    #clear delta jobs
-    # dequeue is fast for jobs with arguments
-    Resque.dequeue ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, delta
   end
 
   module Binary

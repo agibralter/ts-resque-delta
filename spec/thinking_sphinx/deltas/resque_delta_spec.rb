@@ -16,7 +16,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
     subject do
       ThinkingSphinx::Deltas::ResqueDelta.new(
         stub('instance'), {}
-      ).tap do |s| 
+      ).tap do |s|
         s.stub(:toggled).and_return(true)
         s.stub(:lock)
         s.stub(:unlock)
@@ -167,25 +167,6 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
 
     context "when lock key in redis is nil" do
       it { should be_false }
-    end
-  end
-
-  describe '.prepare_for_core_index' do
-    subject { ThinkingSphinx::Deltas::ResqueDelta.prepare_for_core_index('foo') }
-
-    before :each do
-      Resque.stub(:dequeue)
-      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.stub(:clear!)
-    end
-
-    it "should call FlagAsDeletedSet.clear!" do
-      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedSet.should_receive(:clear!).with('foo_core')
-      subject
-    end
-
-    it "should clear delta jobs" do
-      Resque.should_receive(:dequeue).with(ThinkingSphinx::Deltas::ResqueDelta::DeltaJob, 'foo_delta')
-      subject
     end
   end
 end
