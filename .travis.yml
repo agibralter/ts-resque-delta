@@ -1,18 +1,18 @@
 language: ruby
-before_install: gem update --system
-before_script:
-  - mysql -e 'create database thinking_sphinx;'
 rvm:
-  - 1.8.7
-  - ree
   - 1.9.2
   - 1.9.3
-gemfile:
-  - gemfiles/activerecord2.gemfile
-  - gemfiles/activerecord3.gemfile
-matrix:
-  exclude:
-    - rvm: 1.9.2
-      gemfile: gemfiles/activerecord2.gemfile
-    - rvm: 1.9.3
-      gemfile: gemfiles/activerecord2.gemfile
+before_install:
+  - gem update --system
+  - gem install bundler --no-ri --no-rdoc
+  - curl -O http://fs-packages.s3.amazonaws.com/fs-sphinx-2.0.6_x86_64_12.04.deb
+  - sudo dpkg -i fs-sphinx-2.0.6_x86_64_12.04.deb
+  - bundle install
+before_script:
+  - "mysql -e 'create database thinking_sphinx;' > /dev/null"
+  - "psql -c 'create database thinking_sphinx;' -U postgres > /dev/null"
+  - "bundle exec rake appraisal:install"
+env:
+  - SPHINX_BIN=/usr/local/sphinx-2.0.6/bin/ SPHINX_VERSION=2.0.6 DATABASE=mysql2
+  - SPHINX_BIN=/usr/local/sphinx-2.0.6/bin/ SPHINX_VERSION=2.0.6 DATABASE=postgresql
+script: "bundle exec rake appraisal spec"
