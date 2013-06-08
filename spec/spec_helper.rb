@@ -1,15 +1,19 @@
-require 'thinking_sphinx'
-require 'thinking_sphinx/deltas/resque_delta'
-require 'flying_sphinx'
-require 'flying_sphinx/resque_delta'
+require 'rubygems'
+require 'bundler'
 
-require 'mock_redis'
-require 'fakefs/spec_helpers'
+Bundler.require :default, :development
 
-RSpec.configure do |c|
-  c.filter_run :focus => true
-  c.run_all_when_everything_filtered = true
-  c.treat_symbols_as_metadata_keys_with_true_values = true
+require 'thinking_sphinx/railtie'
+
+Combustion.initialize! :active_record
+
+root = File.expand_path File.dirname(__FILE__)
+Dir["#{root}/support/**/*.rb"].each { |file| require file }
+
+RSpec.configure do |config|
+  # enable filtering for examples
+  config.filter_run :wip => nil
+  config.run_all_when_everything_filtered = true
 end
 
 SPEC_BIN_PATH = File.expand_path(File.join(File.dirname(__FILE__), 'bin'))

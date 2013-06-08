@@ -1,9 +1,7 @@
-appraise "activerecord2" do
-  gem "activerecord", "~> 2.3.14"
-  gem "mysql2", "~> 0.2.7"
+appraise 'binary' do
+  gem 'thinking-sphinx', '~> 2.1.0'
 end
 
-appraise "activerecord3" do
-  gem "activerecord", "~> 3.2.9"
-  gem "mysql2", "~> 0.3.11"
+appraise 'sphinxql' do
+  gem 'thinking-sphinx', '~> 3.0.3'
 end
