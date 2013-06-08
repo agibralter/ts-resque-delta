@@ -102,7 +102,6 @@ end
 
 require 'thinking_sphinx/deltas/resque_delta/flag_as_deleted_job'
 require 'thinking_sphinx/deltas/resque_delta/delta_job'
-require 'thinking_sphinx/deltas/resque_delta/railtie' if defined?(Rails::Railtie)
 
 ThinkingSphinx.before_index_hooks << Proc.new {
   ThinkingSphinx::Deltas::ResqueDelta.cancel_jobs
