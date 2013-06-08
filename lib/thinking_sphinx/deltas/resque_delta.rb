@@ -34,20 +34,6 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     end
   end
 
-  # Use simplistic locking.  We're assuming that the user won't run more than
-  # one `rake ts:si` or `rake ts:in` task at a time.
-  def self.lock(index_name)
-    Resque.redis.set("#{JOB_PREFIX}:index:#{index_name}:locked", 'true')
-  end
-
-  def self.unlock(index_name)
-    Resque.redis.del("#{JOB_PREFIX}:index:#{index_name}:locked")
-  end
-
-  def self.locked?(index_name)
-    Resque.redis.get("#{JOB_PREFIX}:index:#{index_name}:locked") == 'true'
-  end
-
   module Binary
     # Adds a job to the queue for processing the given model's delta index. A
     # job for hiding the instance in the core index is also created, if an
@@ -66,18 +52,13 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
     def index(model, instance = nil)
       return true if skip? instance
 
-      model.delta_index_names.each do |delta|
-        next if self.class.locked? delta
+      Resque.enqueue ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+        model.delta_index_names
 
-        Resque.enqueue(
-          ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
-          delta
-        )
-      end
-
-      model.core_index_names.each do |core|
-        FlagAsDeletedSet.add(core, instance.sphinx_document_id)
-      end if instance
+      Resque.enqueue(
+        ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob,
+        model.core_index_names, instance.sphinx_document_id
+      ) if instance
 
       true
     end

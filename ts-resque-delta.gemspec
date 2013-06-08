@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "thinking-sphinx",     ">= 1.5.0"
   s.add_dependency "resque",              "~> 1.24"
-  s.add_dependency "resque-lock-timeout", "~> 0.4"
 
   s.add_development_dependency 'activerecord',     '3.2.13'
   s.add_development_dependency 'activesupport',    '3.2.13'
