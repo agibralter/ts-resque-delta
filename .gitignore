@@ -1,4 +1,5 @@
 *.gem
+*.lock
 .bundle
 pkg/*
 *~
@@ -16,4 +17,3 @@ tmp
 /bin
 .rvmrc
 .rbenv-version
-Gemfile.lock
