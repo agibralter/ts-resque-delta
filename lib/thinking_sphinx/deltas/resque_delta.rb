@@ -16,7 +16,8 @@ class ThinkingSphinx::Deltas::ResqueDelta < ThinkingSphinx::Deltas::DefaultDelta
 
   def self.job_types
     [
-      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob
+      ThinkingSphinx::Deltas::ResqueDelta::DeltaJob,
+      ThinkingSphinx::Deltas::ResqueDelta::FlagAsDeletedJob
     ]
   end
 
