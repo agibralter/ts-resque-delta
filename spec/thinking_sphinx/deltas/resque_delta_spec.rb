@@ -29,15 +29,15 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
   describe '.lock' do
     it 'should set the lock key in redis' do
       ThinkingSphinx::Deltas::ResqueDelta.lock('foo')
-      Resque.redis.get("#{ThinkingSphinx::Deltas::ResqueDelta.job_prefix}:index:foo:locked").should eql('true')
+      Resque.redis.get("#{ThinkingSphinx::Deltas::ResqueDelta::JOB_PREFIX}:index:foo:locked").should eql('true')
     end
   end
 
   describe '.unlock' do
     it 'should unset the lock key in redis' do
-      Resque.redis.set("#{ThinkingSphinx::Deltas::ResqueDelta.job_prefix}:index:foo:locked", 'true')
+      Resque.redis.set("#{ThinkingSphinx::Deltas::ResqueDelta::JOB_PREFIX}:index:foo:locked", 'true')
       ThinkingSphinx::Deltas::ResqueDelta.unlock('foo')
-      Resque.redis.get("#{ThinkingSphinx::Deltas::ResqueDelta.job_prefix}:index:foo:locked").should be_nil
+      Resque.redis.get("#{ThinkingSphinx::Deltas::ResqueDelta::JOB_PREFIX}:index:foo:locked").should be_nil
     end
   end
 
@@ -45,7 +45,7 @@ describe ThinkingSphinx::Deltas::ResqueDelta do
     subject { ThinkingSphinx::Deltas::ResqueDelta.locked?('foo') }
 
     context "when lock key in redis is true" do
-      before { Resque.redis.set("#{ThinkingSphinx::Deltas::ResqueDelta.job_prefix}:index:foo:locked", 'true') }
+      before { Resque.redis.set("#{ThinkingSphinx::Deltas::ResqueDelta::JOB_PREFIX}:index:foo:locked", 'true') }
       it { should be_true }
     end
 
