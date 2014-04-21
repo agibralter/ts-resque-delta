@@ -8,6 +8,8 @@ before_install:
 before_script:
   - "mysql -e 'create database thinking_sphinx;' > /dev/null"
   - "psql -c 'create database thinking_sphinx;' -U postgres > /dev/null"
+services:
+  - redis-server
 env:
   - SPHINX_BIN=/usr/local/sphinx-2.0.9/bin/ SPHINX_VERSION=2.0.9 DATABASE=mysql2
   - SPHINX_BIN=/usr/local/sphinx-2.0.9/bin/ SPHINX_VERSION=2.0.9 DATABASE=postgresql
