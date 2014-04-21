@@ -1,6 +1,10 @@
 require 'acceptance/spec_helper'
 
 describe 'SQL delta indexing', :live => true do
+  def sleep_for_sphinx
+    sleep ENV['CI'] ? 1.0 : 0.25
+  end
+
   it "automatically indexes new records" do
     guards = Book.create(
       :title => 'Guards! Guards!', :author => 'Terry Pratchett'
@@ -13,7 +17,7 @@ describe 'SQL delta indexing', :live => true do
       :title => 'Men At Arms', :author => 'Terry Pratchett'
     )
     work
-    sleep 0.25
+    sleep_for_sphinx
 
     Book.search('Terry Pratchett').to_a.should == [guards, men]
   end
@@ -26,7 +30,7 @@ describe 'SQL delta indexing', :live => true do
 
     book.reload.update_attributes(:author => 'Terry Pratchett')
     work
-    sleep 0.25
+    sleep_for_sphinx
 
     Book.search('Terry').to_a.should == [book]
   end
@@ -39,7 +43,7 @@ describe 'SQL delta indexing', :live => true do
 
     book.reload.update_attributes(:author => 'Terry Pratchett')
     work
-    sleep 0.25
+    sleep_for_sphinx
 
     Book.search('Harry').should be_empty
   end
