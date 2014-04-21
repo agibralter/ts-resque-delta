@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name        = 'ts-resque-delta'
-  s.version     = '1.2.4'
+  s.version     = '2.0.0'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Aaron Gibralter', 'Pat Allan']
   s.email       = ['aaron.gibralter@gmail.com']
