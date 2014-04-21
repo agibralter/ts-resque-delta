@@ -7,67 +7,56 @@ Delayed Deltas for Thinking Sphinx (with Resque)
 
 Installation
 ------------
-This gem depends on the following gems: _thinking-sphinx_, _resque_, and
-_resque-lock-timeout_.
 
-    gem install ts-resque-delta
+This gem depends on the following gems: `thinking-sphinx` and `resque`.
 
-Add _ts-resque-delta_ to your **Gemfile** file, with the rest of your gem
-dependencies:
+Currently, you'll need Thinking Sphinx v1.5.0 (for Rails 2), v2.1.0
+(for Rails 3), or - ideally - v3.0.3 or newer (for Rails 3.1 onwards). If you're
+on a version of Thinking Sphinx that's too old, you better go upgrade - but
+otherwise, add `ts-resque-delta` to your `Gemfile` file with the rest of your
+gem dependencies:
 
-    gem 'ts-resque-delta', '1.1.1'
+    gem 'ts-resque-delta', '~> 2.0.0'
 
-If you're using Rails 3, the rake tasks will automatically be loaded by Rails.
-If you're using Rails 2, add the following line to your **Rakefile**:
+Add the delta property to index definition. If you're using Thinking Sphinx v3,
+then it'll look something like this:
 
-    require 'thinking_sphinx/deltas/resque_delta/tasks'
+    ThinkingSphinx::Index.define(:article,
+      :with  => :active_record,
+      :delta => ThinkingSphinx::Deltas::ResqueDelta
+    ) do
+      # fields and attributes and so on...
+    end
 
-Add the delta property to each `define_index` block:
+But if you're still using v1.5 or v2.1, you'll want the following:
 
     define_index do
-      # ...
+      # fields and attributes and so on...
+
       set_property :delta => ThinkingSphinx::Deltas::ResqueDelta
     end
 
-If you've never used delta indexes before, you'll want to add the boolean
-column named `:delta` to each model's table (note, you must set the `:default`
-value to `true`):
+If you've never used delta indexes before, you'll need to add the boolean
+column named `:delta` to each table for indexed models. A database index for
+that column is also recommended.
 
-    def self.up
-      add_column :foos, :delta, :boolean, :default => true, :null => false
-    end
-
-Also, I highly recommend adding a MySQL index to the table of any model using
-delta indexes. The Sphinx indexer uses `WHERE table.delta = 1` whenever the
-delta indexer runs and `... = 0` whenever the normal indexer runs. Having the
-MySQL index on the delta column will generally be a win:
-
-    def self.up
-      # ...
-      add_index :foos, :delta
+    def change
+      add_column :articles, :delta, :boolean, :default => true, :null => false
+      add_index  :articles, :delta
     end
 
 Usage
 -----
+
 Once you've got it all set up, all you need to do is make sure that the Resque
-worker is running. You can do this by specifying the `:ts_delta` queue when
+worker is running. You can do this by specifying the `ts_delta` queue when
 running Resque:
 
     QUEUE=ts_delta,other_queues rake resque:work
 
-Additionally, ts-resque-delta will wrap thinking-sphinx's
-`thinking_sphinx:index` and `thinking_sphinx:reindex` tasks with
-`thinking_sphinx:lock_deltas` and `thinking_sphinx:unlock_deltas`. This will
-prevent the delta indexer from running at the same time as the main indexer.
-
-Finally, ts-resque-delta also provides a rake task called
-`thinking_sphinx:smart_index` (or `ts:si` for short). This task, instead of
-locking all the delta indexes at once while the main indexer runs, will lock
-each delta index independently and sequentially. Thay way, your delta indexer
-can run while the main indexer is processing large core indexes.
-
 Contributors (for ts-resque-delta)
 -----------------------------------
+
 * [Aaron Gibralter](https://github.com/agibralter)
 * [Ryan Schlesinger](https://github.com/ryansch) (Locking/`smart_index`)
 * [Pat Allan](https://github.com/freelancing-god) (FlyingSphinx support)
@@ -75,6 +64,7 @@ Contributors (for ts-resque-delta)
 
 Original Contributors (for ts-delayed-delta)
 --------------------------------------------
+
 * [Pat Allan](https://github.com/freelancing-god)
 * [Ryan Schlesinger](https://github.com/ryansch) (Allowing installs as a plugin)
 * [Maximilian Schulz](https://max.jungeelite.de) (Ensuring compatibility with Bundler)
@@ -83,4 +73,6 @@ Original Contributors (for ts-delayed-delta)
 
 Copyright
 ---------
-Copyright (c) 2011 Aaron Gibralter, and released under an MIT Licence.
+
+Copyright (c) 2011-2014 Aaron Gibralter and Pat Allan, and released under an MIT
+Licence.
